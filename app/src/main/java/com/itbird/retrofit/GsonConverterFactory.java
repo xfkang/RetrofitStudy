@@ -11,7 +11,7 @@ import okhttp3.ResponseBody;
  */
 public class GsonConverterFactory extends ConverterFactory.Factory {
     public static GsonConverterFactory create() {
-        return new GsonConverterFactory(new Gson());
+        return new GsonConverterFactory();
     }
 
     @Override
