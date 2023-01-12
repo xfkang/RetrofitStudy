@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import okhttp3.Call;
+import okhttp3.OkHttp;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -22,13 +24,11 @@ import okhttp3.Request;
  */
 public class Retrofit {
     private Builder builder;
-    OkHttpClient okHttpClient;
     private String TAG = Retrofit.class.getSimpleName();
     private Map<Method, ServiceMethod> cacheMap;
 
     private Retrofit(Builder builder) {
         this.builder = builder;
-        okHttpClient = new OkHttpClient().newBuilder().build();
         cacheMap = new ConcurrentHashMap<>();
     }
 
@@ -36,27 +36,25 @@ public class Retrofit {
         //检验是否是一个接口，检验是否继承自接口
         checkIsForInterface(sourceclass);
 
+        Log.d(TAG, "create " + sourceclass.getClass());
         //动态代理创建
         return (T) Proxy.newProxyInstance(sourceclass.getClassLoader(), new Class[]{sourceclass}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+                Log.d(TAG, "invoke " + method.getName());
+
                 //如果本身就是object的方法，则直接返回，不用经过动态代理创建
-                if (method.getDeclaringClass() instanceof Object) {
+                if (method.getDeclaringClass() == Object.class) {
                     return method.invoke(proxy, args);
                 }
 
                 //这里将相应的信息拼装
                 ServiceMethod serviceMethod = loadServiceMethod(method);
 
-                //注解处理完成，这里使用ServiceMethod相关参数注解和方法注解信息，进行请求的url拼接
-                String url = builder.url + "pet/" + args[0];
-                Log.d(TAG, "url = " + url);
-
-                //新建okhttp requset对象
-                Request request = new Request.Builder().url(url).build();
-
-                //然后返回okhttp的call
-                return okHttpClient.newCall(request);
+                //将请求的封装与具体请求，封装到具体的call实现类中
+                RetrofitCall retrofitCall = new RetrofitCall(Retrofit.this, serviceMethod, args);
+                return retrofitCall;
             }
         });
     }
@@ -67,7 +65,8 @@ public class Retrofit {
      * @param method
      * @return
      */
-    private <T> ServiceMethod loadServiceMethod(Method method) {
+    private ServiceMethod loadServiceMethod(Method method) {
+        Log.d(TAG, "loadServiceMethod " + method.getName());
         ServiceMethod serviceMethod = cacheMap.get(method);
         if (serviceMethod == null) {
             serviceMethod = new ServiceMethod.Builder(this, method).build();
@@ -92,12 +91,26 @@ public class Retrofit {
         }
     }
 
+    public String baseUrl() {
+        return builder.url;
+    }
+
+    public Call.Factory getClient() {
+        return builder.callFactory;
+    }
+
     public static class Builder {
         private String url;
         private ConverterFactory.Factory factory;
+        private Call.Factory callFactory;
 
         public Builder baseUrl(String url) {
             this.url = url;
+            return this;
+        }
+
+        public Builder client(Call.Factory callFactory) {
+            this.callFactory = callFactory;
             return this;
         }
 
@@ -107,6 +120,9 @@ public class Retrofit {
         }
 
         public Retrofit build() {
+            if (callFactory == null) {
+                callFactory = (Call.Factory) new OkHttpClient().newBuilder().build();
+            }
             return new Retrofit(this);
         }
     }

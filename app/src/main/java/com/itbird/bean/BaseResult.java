@@ -3,7 +3,7 @@ package com.itbird.bean;
 /**
  * Created by itbird on 2022/12/20
  */
-public class Response {
+public class BaseResult<T> {
     /**
      * 状态码
      */
@@ -11,7 +11,7 @@ public class Response {
     /**
      * 宠物信息
      */
-    private Pet data;
+    private T data;
 
     public long getCode() {
         return code;
@@ -21,11 +21,11 @@ public class Response {
         this.code = value;
     }
 
-    public Pet getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Pet value) {
+    public void setData(T value) {
         this.data = value;
     }
 
