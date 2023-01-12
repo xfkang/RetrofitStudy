@@ -50,7 +50,7 @@ public class Retrofit {
                 }
 
                 //这里将相应的信息拼装
-                ServiceMethod serviceMethod = loadServiceMethod(method);
+                ServiceMethod serviceMethod = loadServiceMethod(method, args);
 
                 //将请求的封装与具体请求，封装到具体的call实现类中
                 RetrofitCall retrofitCall = new RetrofitCall(Retrofit.this, serviceMethod, args);
@@ -65,11 +65,11 @@ public class Retrofit {
      * @param method
      * @return
      */
-    private ServiceMethod loadServiceMethod(Method method) {
+    private ServiceMethod loadServiceMethod(Method method, Object[] args) {
         Log.d(TAG, "loadServiceMethod " + method.getName());
         ServiceMethod serviceMethod = cacheMap.get(method);
         if (serviceMethod == null) {
-            serviceMethod = new ServiceMethod.Builder(this, method).build();
+            serviceMethod = new ServiceMethod.Builder(this, method, args).build();
             cacheMap.put(method, serviceMethod);
         }
         return serviceMethod;

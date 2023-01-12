@@ -36,12 +36,9 @@ public class RetrofitCall<T> implements Call<T> {
         // 真正发起请求的地方
         Log.d(TAG, "RetrofitCall enqueue");
 
-        //注解处理完成，这里使用ServiceMethod相关参数注解和方法注解信息，进行请求的url拼接
-        String url = retrofit.baseUrl() + "pet/" + args[0];
-        Log.d(TAG, "url = " + url);
-
-        //新建okhttp requset对象
-        Request request = new Request.Builder().url(url).build();
+        //创建requset
+        Request request = serviceMethod.createRequest();
+        Log.d(TAG, "url = " + request.url());
 
         //获取到okhttp的call对象
         okhttp3.Call okhttpCall = retrofit.getClient().newCall(request);
