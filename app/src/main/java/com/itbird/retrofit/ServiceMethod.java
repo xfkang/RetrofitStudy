@@ -1,5 +1,7 @@
 package com.itbird.retrofit;
 
+import android.util.Log;
+
 import com.itbird.annotation.GET;
 import com.itbird.annotation.Path;
 
@@ -11,53 +13,61 @@ import java.lang.reflect.Method;
  */
 public class ServiceMethod {
     Builder builder;
+    private static String TAG = ServiceMethod.class.getSimpleName();
 
     public ServiceMethod(Builder builder) {
         this.builder = builder;
     }
 
-    public static class Builder<T> {
+    public static class Builder {
         Retrofit retrofit;
-        Class<T> sourceClass;
+        Method method;
+        ParameterHandler<?>[] parameterHandlers;
+        String mRelativeUrl;
 
-        public Builder(Retrofit retrofit, Class<T> sourceClass) {
+        public Builder(Retrofit retrofit, Method method) {
             this.retrofit = retrofit;
-            this.sourceClass = sourceClass;
+            this.method = method;
+            parameterHandlers = new ParameterHandler[method.getParameterAnnotations().length];
         }
 
         public ServiceMethod build() {
-            parseAnnotation(sourceClass);
+            parseAnnotation(method);
             return new ServiceMethod(this);
         }
 
-        private <T> void parseAnnotation(Class<T> searchPatClass) {
-            Method[] methods = searchPatClass.getDeclaredMethods();
-            for (Method method : methods) {
-                parseMethodAnnotation(method.getDeclaredAnnotations());
-                parseParamsAnnotation(method.getParameterAnnotations());
-            }
+        private void parseAnnotation(Method method) {
+            parseMethodAnnotation(method.getDeclaredAnnotations());
+            parseParamsAnnotation(method.getParameterAnnotations());
         }
 
+        /**
+         * 解析参数注解
+         *
+         * @param parameterAnnotations
+         */
         private void parseParamsAnnotation(Annotation[][] parameterAnnotations) {
             for (int i = 0; i < parameterAnnotations.length; i++) {
-                Path annotation = (Path) parameterAnnotations[i][0];
-                retrofit.add(annotation.value());
-            }
-        }
-
-        private void parseMethodAnnotation(Annotation[] annotations) {
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof GET) {
-                    parseGetAnnotation(annotation);
+                Annotation annotation = parameterAnnotations[i][0];
+                Log.d(TAG, annotation.annotationType().getName());
+                if (annotation instanceof Path) {
+                    //不同的参数注解，选择不同的处理策略
+                    parameterHandlers[i] = new ParameterHandler.PathParameterHandler<>(((Path) annotation).value());
                 }
             }
         }
 
-        private void parseGetAnnotation(Annotation annotation) {
-            //   "pet/{petId}"
-            String value = ((GET) annotation).value();
-            // 我们首先清楚目的，我们这里是想要把{petId}替换为参数path中，具体变量值，所以这里只能将其保持
-            retrofit.setRelativeUrl(value);
+        /**
+         * 解析方法注解
+         *
+         * @param annotations
+         */
+        private void parseMethodAnnotation(Annotation[] annotations) {
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof GET) {
+                    mRelativeUrl = ((GET) annotation).value();
+                }
+            }
         }
     }
 }

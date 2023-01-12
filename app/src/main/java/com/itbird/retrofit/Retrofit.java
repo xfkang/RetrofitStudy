@@ -23,15 +23,12 @@ import okhttp3.Request;
 public class Retrofit {
     private Builder builder;
     OkHttpClient okHttpClient;
-    private String relativeUrl;
-    private Set<String> set;
     private String TAG = Retrofit.class.getSimpleName();
-    private Map<Class<?>, ServiceMethod> cacheMap;
+    private Map<Method, ServiceMethod> cacheMap;
 
     private Retrofit(Builder builder) {
         this.builder = builder;
         okHttpClient = new OkHttpClient().newBuilder().build();
-        set = new HashSet<>();
         cacheMap = new ConcurrentHashMap<>();
     }
 
@@ -49,8 +46,9 @@ public class Retrofit {
                 }
 
                 //这里将相应的信息拼装
-                ServiceMethod serviceMethod = loadServiceMethod(sourceclass);
+                ServiceMethod serviceMethod = loadServiceMethod(method);
 
+                //注解处理完成，这里使用ServiceMethod相关参数注解和方法注解信息，进行请求的url拼接
                 String url = builder.url + "pet/" + args[0];
                 Log.d(TAG, "url = " + url);
 
@@ -66,14 +64,14 @@ public class Retrofit {
     /**
      * 创建ServiceMethod，进行注解处理
      *
-     * @param sourceClass
+     * @param method
      * @return
      */
-    private <T> ServiceMethod loadServiceMethod(Class<T> sourceClass) {
-        ServiceMethod serviceMethod = cacheMap.get(sourceClass);
+    private <T> ServiceMethod loadServiceMethod(Method method) {
+        ServiceMethod serviceMethod = cacheMap.get(method);
         if (serviceMethod == null) {
-            serviceMethod = new ServiceMethod.Builder(this, sourceClass).build();
-            cacheMap.put(sourceClass, serviceMethod);
+            serviceMethod = new ServiceMethod.Builder(this, method).build();
+            cacheMap.put(method, serviceMethod);
         }
         return serviceMethod;
     }
@@ -92,14 +90,6 @@ public class Retrofit {
         if (sourceclass.getInterfaces().length > 1) {
             throw new IllegalArgumentException("sourceclass has too much interfaces");
         }
-    }
-
-    public void add(String value) {
-        set.add(value);
-    }
-
-    public void setRelativeUrl(String value) {
-        relativeUrl = value;
     }
 
     public static class Builder {
