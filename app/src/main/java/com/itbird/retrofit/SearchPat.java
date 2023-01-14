@@ -8,7 +8,7 @@ import com.itbird.bean.Pet;
 /**
  * Created by itbird on 2022/12/20
  */
-public interface SearchPat{
+public interface SearchPat {
     @GET("pet/{petId}")
     Call<Pet> searchPat(@Path("petId") String petId);
 }
