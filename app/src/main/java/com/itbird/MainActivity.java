@@ -1,5 +1,6 @@
 package com.itbird;
 
+import android.inputmethodservice.InputMethodService;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -11,6 +12,7 @@ import com.itbird.retrofit.Callback;
 import com.itbird.retrofit.GsonConverterFactory;
 import com.itbird.retrofit.R;
 import com.itbird.retrofit.Retrofit;
+import com.itbird.retrofit.RetrofitManager;
 import com.itbird.retrofit.SearchPat;
 
 import okhttp3.OkHttpClient;
@@ -24,17 +26,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         testRetrofit();
     }
 
     private void testRetrofit() {
         //第一步，通过建造者模式，创建了Retrofit对象，对于baseurl、convert等功能进行了封装
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.30.7:4523/m1/2102862-0-default/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl("http://192.168.30.7:4523/m1/2102862-0-default/")
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build();
 
+        // 这里修改为retrofitmanager的调用方式
+        RetrofitManager.getInstance().setBaseUrl("http://192.168.251.7:4523/m1/2102862-0-default/");
+        Retrofit retrofit = RetrofitManager.getInstance().getRetrofit(SearchPat.class);
         //第二步，SearchPat接口类的创建
 
         //第三步，使用retrofit的create方法，将SearchPat接口实例化为一个对象
