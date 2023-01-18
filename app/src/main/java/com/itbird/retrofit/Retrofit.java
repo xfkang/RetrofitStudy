@@ -99,6 +99,10 @@ public class Retrofit {
         return builder.callFactory;
     }
 
+    public ConverterFactory.Factory getConvertFactory() {
+        return builder.factory;
+    }
+
     public static class Builder {
         private String url;
         private ConverterFactory.Factory factory;

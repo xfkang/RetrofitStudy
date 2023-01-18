@@ -10,20 +10,11 @@ import okhttp3.ResponseBody;
 /**
  * Created by itbird on 2023/1/9
  */
-public interface ConverterFactory<T, F> {
-    T convert(F value) throws IOException;
+public interface ConverterFactory<ResponseBody, T> {
+    T convert(okhttp3.ResponseBody value, Type type) throws IOException;
 
-    abstract class Factory {
-        ConverterFactory<ResponseBody, ?> responseBodyConverter(
-                Type type, Annotation[] annotations, Retrofit retrofit) {
-            return null;
-        }
-
-        ConverterFactory<?, RequestBody> requestBodyConverter(
-                Type type,
-                Annotation[] parameterAnnotations,
-                Annotation[] methodAnnotations,
-                Retrofit retrofit) {
+    abstract class Factory<ResponseBody, T> {
+        ConverterFactory<okhttp3.ResponseBody, T> responseBodyConverter() {
             return null;
         }
     }

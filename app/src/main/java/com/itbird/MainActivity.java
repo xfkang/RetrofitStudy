@@ -6,12 +6,14 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.itbird.bean.BaseResult;
 import com.itbird.bean.Pet;
 import com.itbird.retrofit.Call;
 import com.itbird.retrofit.Callback;
 import com.itbird.retrofit.GsonConverterFactory;
 import com.itbird.retrofit.R;
 import com.itbird.retrofit.Retrofit;
+import com.itbird.retrofit.RetrofitCallBack;
 import com.itbird.retrofit.RetrofitManager;
 import com.itbird.retrofit.SearchPat;
 
@@ -45,17 +47,29 @@ public class MainActivity extends AppCompatActivity {
         SearchPat service = retrofit.create(SearchPat.class);
 
         //第四步，滴啊用对象的相关请求方法
-        Call<Pet> call = service.searchPat("1");
+        Call<BaseResult<Pet>> call = service.searchPat("1");
 
         //第五步，借助okhttp的call，发起异步请求
-        call.enqueue(new Callback<Pet>() {
+//        call.enqueue(new Callback<Pet>() {
+//            @Override
+//            public void onResponse(Pet response) {
+//                Log.e(TAG, " service.searchPat onResponse = " + response.toString());
+//            }
+//
+//            @Override
+//            public void onFailure(long errorCode, String msg) {
+//                Log.e(TAG, " service.searchPat onFailure errorCode = " + errorCode + "  msg = " + msg);
+//            }
+//        });
+
+        call.enqueue(new RetrofitCallBack<Pet>() {
             @Override
-            public void onResponse(Pet response) {
+            public void onRResponse(Pet response) {
                 Log.e(TAG, " service.searchPat onResponse = " + response.toString());
             }
 
             @Override
-            public void onFailure(long errorCode, String msg) {
+            public void onRFailure(long errorCode, String msg) {
                 Log.e(TAG, " service.searchPat onFailure errorCode = " + errorCode + "  msg = " + msg);
             }
         });

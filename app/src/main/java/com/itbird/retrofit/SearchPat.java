@@ -4,6 +4,7 @@ package com.itbird.retrofit;
 import com.itbird.annotation.BaseUrl;
 import com.itbird.annotation.GET;
 import com.itbird.annotation.Path;
+import com.itbird.bean.BaseResult;
 import com.itbird.bean.Pet;
 
 /**
@@ -12,5 +13,5 @@ import com.itbird.bean.Pet;
 @BaseUrl("http://192.168.30.7:4523/m1/2102862-0-default/")
 public interface SearchPat {
     @GET("pet/{petId}")
-    Call<Pet> searchPat(@Path("petId") String petId);
+    Call<BaseResult<Pet>> searchPat(@Path("petId") String petId);
 }

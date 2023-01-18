@@ -51,7 +51,10 @@ public class RetrofitManager {
                 }
                 baseUrl = mDefaultBaseUrl;
             }
-            retrofit = new Retrofit.Builder().baseUrl(baseUrl).build();
+            retrofit = new Retrofit.Builder()
+                    .baseUrl(baseUrl)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
             retrofitMap.put(baseUrl, retrofit);
         }
         return retrofit;

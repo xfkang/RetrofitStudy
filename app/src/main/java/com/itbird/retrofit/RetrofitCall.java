@@ -4,14 +4,16 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.itbird.bean.BaseResult;
 import com.itbird.bean.Pet;
+import com.itbird.utils.ClassUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 
 import okhttp3.Request;
 import okhttp3.Response;
@@ -52,28 +54,16 @@ public class RetrofitCall<T> implements Call<T> {
 
             @Override
             public void onResponse(@NonNull okhttp3.Call call, @NonNull Response response) throws IOException {
-                //使用Gson转换
-                Gson gson = new Gson();
-                BaseResult<T> response1 = gson.fromJson(response.body().string(), BaseResult.class);
-                Log.d(TAG, "response1.getData() = " + response1.getData().toString());
-                Log.d(TAG, "response1.getCode() = " + response1.getCode());
+                //todo 这里开始使用convertfactory的能力
 
-                if (response1.getCode() == 0) {
-                    //返回正确的信息
-                    //这里有一个关键问题，如果使用gson进行转换，那么需要获取T的类型
+                //mainactvitiy->callback实现的impl interface
 
-                    Type[] type = callback.getClass().getGenericInterfaces();
-                    Log.d(TAG, "type = " + type[0]); //type = com.itbird.retrofit.Callback<com.itbird.bean.Pet>
-
-                    //将type强转成Parameterized
-                    ParameterizedType pt = (ParameterizedType) type[0];
-                    Type[] actualTypes = pt.getActualTypeArguments();
-                    Log.d(TAG, "getActualTypeArguments = " + actualTypes[0]);//com.itbird.bean.Pet
-
-                    T result = gson.fromJson(new Gson().toJson(response1.getData()), actualTypes[0]);
-                    callback.onResponse(result);
+                T response1 = (T) retrofit.getConvertFactory().responseBodyConverter().convert(response.body(), ClassUtils.getGenericInterfaceType(callback.getClass()));
+                if (response1 != null) {
+                    Log.d(TAG, "response1 = " + response1.toString());
+                    callback.onResponse(response1);
                 } else {
-                    callback.onFailure(response1.getCode(), response1.getData().toString());
+                    callback.onFailure(-1, "response is null");
                 }
             }
         });
