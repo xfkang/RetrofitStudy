@@ -28,9 +28,15 @@ public class ClassUtils {
      * @return 泛型实际类型
      */
     public static Type getGenericType(Class declaredClass) {
-        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
-        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-        return actualTypeArguments[0];
+        Type type = declaredClass.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+                return actualTypeArgument;
+            }
+        }
+
+        return null;
     }
 
     public static Type getGenericInterfaceType(Class<?> aClass) {
